@@ -42,10 +42,15 @@ class Camera(nn.Module):
         resized_image_rgb = PILtoTorch(image, resolution)
         gt_image = resized_image_rgb[:3, ...]
         self.alpha_mask = None
-        if resized_image_rgb.shape[0] == 4:
-            self.alpha_mask = resized_image_rgb[3:4, ...].to(self.data_device)
-        else: 
-            self.alpha_mask = torch.ones_like(resized_image_rgb[0:1, ...].to(self.data_device))
+        # 기존 알파 채널 처리 방식 제거
+        # if resized_image_rgb.shape[0] == 4:
+        #     self.alpha_mask = resized_image_rgb[3:4, ...].to(self.data_device)
+        # else: 
+        #     self.alpha_mask = torch.ones_like(resized_image_rgb[0:1, ...].to(self.data_device))
+        
+        # 검은색 픽셀을 마스크로 설정
+        black_pixel_mask = torch.all(gt_image == 0, dim=0, keepdim=True)
+        self.alpha_mask = torch.where(black_pixel_mask, torch.tensor(0.0, device=self.data_device), torch.tensor(1.0, device=self.data_device))
 
         if train_test_exp and is_test_view:
             if is_test_dataset:
