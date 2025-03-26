@@ -133,11 +133,18 @@ class GaussianModel:
     def get_exposure(self):
         return self._exposure
 
+    # def get_exposure_from_name(self, image_name):
+    #     if self.pretrained_exposures is None:
+    #         return self._exposure[self.exposure_mapping[image_name]]
+    #     else:
+    #         return self.pretrained_exposures[image_name]
     def get_exposure_from_name(self, image_name):
-        if self.pretrained_exposures is None:
+        if hasattr(self, "_exposure") and image_name in self.exposure_mapping:
             return self._exposure[self.exposure_mapping[image_name]]
         else:
-            return self.pretrained_exposures[image_name]
+            # exposure가 없을 경우 단위 행렬 반환
+            return torch.eye(3, 4, dtype=torch.float32, device='cuda')  # 3x4 기본 노출 행렬
+###no exposure.json
     
     def get_covariance(self, scaling_modifier = 1):
         return self.covariance_activation(self.get_scaling, scaling_modifier, self._rotation)
